@@ -94,7 +94,7 @@ void QueueAr< Object >::doubleSize( )
 		{
 			_newArray[_newCapacity - i] = _newArray[queueCapacity - i];
 		}
-		last = _newCapacity - i  + 1;
+		first = _newCapacity - i  + 1;
 	}
 	
 	queueCapacity = _newCapacity;
