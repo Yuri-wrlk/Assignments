@@ -71,7 +71,6 @@ class Forward_list {
         // Métodos específicos das listas encadeadas
         void push_front( const T & x );
         void pop_front();
-        size_type length();
         void print();
         
     private:

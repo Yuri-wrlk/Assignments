@@ -142,11 +142,6 @@ void Forward_list<T>::pop_front() {
 }
 
 template <class T>
-size_type Forward_list<T>::length() {
-    return m_size;
-}
-
-template <class T>
 void Forward_list<T>::print() {
     int i = 0;
     Node* work = m_head;
