@@ -4,6 +4,109 @@ Forward_list<T>::Forward_list() :
         m_head (nullptr),
         m_tail (nullptr)
 { /* Empty */ }
+
+template <class T>
+Forward_list<T>::~Forward_list() 
+{
+    clear();
+}
+
+template <class T>
+Forward_list<T>::Forward_list(const Forward_list<T> &lista)
+{
+    clear();
+    if(lista.size() != 0)
+    {
+        Node * tocopy = lista.m_head; // aqui esta dando erro //precisamos do metdodo que pega o m_head // sim, deixa comigo ai ô returnM_head()
+        Node * newNode;
+        try {
+            newNode = new Node;
+        }
+        catch(const std::bad_alloc & e) {
+            throw std::overflow_error ( "Erro durante alocação na memoria do novo valor da lista.\n");
+        }
+    
+        newNode->data = tocopy->data; 
+        newNode->next = nullptr;
+        m_head = newNode;
+        m_tail = newNode;
+        tocopy = tocopy->next;
+    
+        while(tocopy != nullptr){
+        
+            try {
+                newNode->next = new Node;
+            }
+            catch(const std::bad_alloc & e) {
+                throw std::overflow_error ( "Erro durante alocação na memoria do novo valor da lista.\n");
+            }
+            newNode = newNode->next;
+            
+            newNode->data = tocopy->data;
+            newNode->next = nullptr;
+            
+            m_tail = newNode;
+            tocopy = tocopy->next;
+        }                   
+    }
+    m_size = lista.size(); 
+}
+
+template <class T>
+Forward_list<T>::Forward_list(Forward_list<T> && ) 
+{
+    
+}
+
+template <class T>
+Forward_list<T> & Forward_list<T>::operator= ( const Forward_list<T> & lista){ // copia profunda
+    clear();
+    if(lista.size() != 0)
+    {
+        Node * tocopy = lista.m_head;
+        Node * newNode;
+        try {
+            newNode = new Node;
+        }
+        catch(const std::bad_alloc & e) {
+            throw std::overflow_error ( "Erro durante alocação na memoria do novo valor da lista.\n");
+        }
+    
+        newNode->data = tocopy->data; 
+        newNode->next = nullptr;
+        m_head = newNode;
+        m_tail = newNode;
+        tocopy = tocopy->next;
+    
+        while(tocopy != nullptr){
+        
+            try {
+                newNode->next = new Node;
+            }
+            catch(const std::bad_alloc & e) {
+                throw std::overflow_error ( "Erro durante alocação na memoria do novo valor da lista.\n");
+            }
+            newNode = newNode->next;
+            
+            newNode->data = tocopy->data;
+            newNode->next = nullptr;
+            
+            m_tail = newNode;
+            tocopy = tocopy->next;
+        }                   
+    }
+    m_size = lista.size();
+    return *this;
+}
+
+template <class T>
+Forward_list<T> & Forward_list<T>::operator= ( Forward_list<T> && lista)
+{
+    clear();
+    Node* work =  lista;
+    m_head = lista.front();
+    m_tail = lista.back();
+}
         
 template <class T>
 size_type Forward_list<T>::size() const {
@@ -11,7 +114,8 @@ size_type Forward_list<T>::size() const {
     return m_size;
 }
 
-    
+
+
 template <class T>
 void Forward_list<T>::clear(){
     if(m_head != nullptr){
@@ -22,6 +126,7 @@ void Forward_list<T>::clear(){
             m_head = work;
         }
         m_head = nullptr;
+        m_tail = nullptr;
         m_size = 0;
     }
 }
@@ -156,8 +261,24 @@ void Forward_list<T>::print() {
     }
     std::cout << "]\n";
 }
+/*
+template <class T>
+typename Forward_list<T>::Iterator insert_after( Forward_list<T>::Const_Iterator itr , const T & x )
+{
+    Node* work = itr.const_it_ptr;
+    while(work != nullptr)
+    {
+        work->data = x;
+        work = work->next;
+    }
+}
 
-
+template <class T>
+typename Forward_list<T>::Iterator insert_after( Const_Iterator pos , std::initializer_list<T> ilist )
+{
+    
+}
+*/
 //OBS: o tipo SNPtr aqui se chama NPtr
 //OBS2: o _pAIL aqui se chama head que é o ponteiro para o inicio da lista
 // sim mas é bom olhar caso a caso para não gerar algum problema

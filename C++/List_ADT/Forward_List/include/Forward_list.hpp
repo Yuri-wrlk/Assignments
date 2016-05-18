@@ -21,6 +21,11 @@ class Forward_list {
     public:
     
         Forward_list();
+        ~Forward_list();
+        Forward_list(const Forward_list<T> &);
+        Forward_list(Forward_list<T> &&);
+        Forward_list & operator= ( const Forward_list<T> & );
+        Forward_list & operator= ( Forward_list<T> && );
         
         // -------------Class of iterator--------------
         class Iterator 
@@ -64,14 +69,20 @@ class Forward_list {
         void pop_back();
         const T & back() const;
         const T & front() const;
-        bool insert(Node* _pAnte, int _newVal );
-        bool remove(Node* _pAnte, int & _retrievedVal );
+        // bool insert(Node* _pAnte, int _newVal );
+        // bool remove(Node* _pAnte, int & _retrievedVal );
         void assign(const T & x);
         
         // Métodos específicos das listas encadeadas
         void push_front( const T & x );
         void pop_front();
         void print();
+        
+        Iterator insert_after( Const_Iterator itr , const T & x );
+        Iterator insert_after( Const_Iterator pos , std::initializer_list<T> ilist );
+        Iterator erase_after( Const_Iterator itr );
+        Iterator erase_after( Const_Iterator first , Const_Iterator last );
+        Const_Iterator find( const T & x ) const ;
         
     private:
         size_type m_size;
