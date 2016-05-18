@@ -1,23 +1,31 @@
-#ifndef _VECTOR_
-#define _VECTOR_
+#ifndef _FORWARD_LIST_HPP_
+#define _FORWARD_LIST_HPP_
 
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 
+using size_type = long long unsigned;
 
-using size_type = unsigned long long;
-
-template < class T >
-class Vector
-{
-
+template <class T>
+class Forward_list {
+    private:
+        struct Node {
+          T data;
+          Node * next;
+          
+          Node ( const T & d = T( ), Node * n = nullptr ) : data ( d ), next ( n )
+          { /* Empty */ }
+        };
+    
     public:
     
-    // -------------Class of iterator--------------
+        Forward_list();
+        
+        // -------------Class of iterator--------------
         class Iterator 
         {
-            friend class Vector;
+            friend class Forward_list;
             public:
                 
                 Iterator(T * vec = nullptr);
@@ -35,7 +43,7 @@ class Vector
         
         class Const_Iterator 
         {
-            friend class Vector;
+            friend class Forward_list;
             public:
                 
                 Const_Iterator(T * vec = nullptr);
@@ -46,47 +54,33 @@ class Vector
             protected:
                 T * const_it_ptr;
         };
-      
-    // --------Constructor and destructor-----------
-        Vector(size_type = 1);
-        Vector(Vector & arr);
-        ~Vector();
-
-    // -------------Public Methods------------------
-    
-        // Esses métodos são unicos do Vector
-        T & operator[] (size_type idx) const;
-        T & at(size_type idx);
-        size_type capacity() const;
-        void reserve(size_type new_capacity);
-
-        // Métodos comuns a todas as listas
+        
+        
+        // Métodos comuns as TADs lista 
         size_type size() const;
-        void clear();
+        void clear();   
         bool empty();
         void push_back( const T & x );
         void pop_back();
         const T & back() const;
         const T & front() const;
+        bool insert(Node* _pAnte, int _newVal );
+        bool remove(Node* _pAnte, int & _retrievedVal );
         void assign(const T & x);
-        void resize(size_type);
         
-        Iterator begin();
-        Iterator end();
+        // Métodos específicos das listas encadeadas
+        void push_front( const T & x );
+        void pop_front();
+        size_type length();
+        void print();
         
-        // Métodos comuns que utilizam o iterator
-        
-
     private:
-    // -------------Class Variables-----------------
-         
-        size_type arrSz;
-        size_type arrCapacity;
-        std::unique_ptr<T[]> arr;
+        size_type m_size;
+        // typedef struct Node* NPtr; // no less SNPtr = NPtr
+        Node *m_head;
+        Node *m_tail;
+    
 };
 
-#include "vector.inl"
-#include "iterator.inl"
-
-
+#include "Forward_list.inl"
 #endif
