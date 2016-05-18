@@ -1,22 +1,7 @@
-#ifndef _VECTOR_H_
-#define _VECTOR_H_
-
-#include "vector.hpp"
-
-/**
-*   Esse contrutor cria o vector com valores zerados
-*/
-template < class T >
-Vector<T>::Vector() :
-        arrCapacity(0),
-        arrSz(0),
-        arr (new T [0])
-        {}
-
-/**
-*   Esse contrutor cria o vector
-*   @params _size   Esse parametro é o tamanho do vector.
-*/
+/*!
+ *   Esse contrutor cria o vector
+ *   @params _size   Esse parametro é o tamanho do vector.
+ */
 template < class T >
 Vector<T>::Vector(size_type _size) :
         arrSz(0),
@@ -24,10 +9,10 @@ Vector<T>::Vector(size_type _size) :
         arr (new T [arrCapacity])
         {}
 
-/**
-*   Esse contrutor cria o vector
-*   @params toCopy  o objeto vector que deverá ser copiado para o que esta sendo construído.
-*/
+/*!
+ *   Esse contrutor cria o vector
+ *   @params toCopy  o objeto vector que deverá ser copiado para o que esta sendo construído.
+ */
 template <class T>
 Vector<T>::Vector(Vector & toCopy) :
         arrCapacity (toCopy.capacity()),
@@ -44,14 +29,16 @@ Vector<T>::~Vector()
     clear();
 }
 
-/**
-*   Implementa o operador []
-*   @params recebe como parametro o index do elemento a ser acessado.
-*   @return retorna uma referência do elemento que foi pedido.
-*/
+/*!
+ *   Implementa o operador []
+ *   @params recebe como parametro o index do elemento a ser acessado.
+ *   @return retorna uma referência do elemento que foi pedido.
+ */
 template <class T>
 T & Vector<T>::operator[] (size_type idx) const
 {
+    if (idx >= arrSz)
+        throw std::length_error ("Indice fora do escopo");
     return arr[idx];
 }
 
@@ -73,30 +60,32 @@ size_type Vector<T>::capacity() const {
 
 template <class T>
 void Vector<T>::reserve(size_type new_capacity) {
+    if(new_capacity == 0) {
+        new_capacity = 2;
+    }
+    
     if(arrCapacity < new_capacity) {
-        std::unique_ptr<T[]>auxArr (new T[new_capacity]);
-        for(int i=0; i < capacity; i++) {
+        std::unique_ptr<T[]> auxArr (new T[new_capacity]);
+        for(int i=0; i < arrCapacity; i++) {
             auxArr[i] = arr[i];
         }
-        arrCapacity *= 2;
-        clear();
-        arr(nullptr);
-        arr(auxArr);
+        arr = std::move(auxArr);
+        arrCapacity = new_capacity;
     }
     else {
-        std::cerr << ">>> O novo tamanho não é maior do que o tamanho atual.\n";
+        std::cerr << ">>> O novo tamanho nao e maior do que o tamanho atual.\n";
     }
 }
 
-/**
-*   Implementa o operador []
-*   @params recebe como parametro o index do elemento a ser acessado.
-*   @return retorna uma referência do elemento que foi pedido.
-*/
+/*!
+ *   Implementa o operador []
+ *   @params recebe como parametro o index do elemento a ser acessado.
+ *   @return retorna uma referência do elemento que foi pedido.
+ */
 template < class T >
 size_type Vector<T>::size() const
 {
-    return arrCapacity;
+    return arrSz;
 }
 
 template < class T >
@@ -105,8 +94,8 @@ void Vector<T>::clear()
     for(auto i=0; i < arrSz; i++)
     {
         arr[i].~T();
-        arrSz--;
     }
+    arrSz = 0;
 }
 
 /**
@@ -127,6 +116,8 @@ bool Vector<T>::empty()
 template < class T >
 void Vector<T>::push_back( const T & x )
 {
+    if(arrSz == arrCapacity)
+        reserve(arrCapacity * 2);
     arr[arrSz] = x;
     arrSz++;
 }
@@ -139,11 +130,11 @@ void Vector<T>::push_back( const T & x )
 template < class T >
 void Vector<T>::pop_back()
 {
-    if(empty())
+    if(arrSz == 0) 
     {
-        std::cerr << ">>> Não é posivel retirar elementos pois vetor esta vazio.\n";
+        throw std::length_error ("Nao ha elemento no vetor");
     }
-    arr[arrSz]->~T();
+    arr[arrSz - 1].~T();
     arrSz--;
 }
 
@@ -154,7 +145,12 @@ void Vector<T>::pop_back()
 template < class T >
 const T & Vector<T>::back() const
 {
-    return arr[arrSz];
+    if (arrSz == 0)
+    {
+        throw std::length_error ("Nao ha elemento no vetor");
+    }
+    
+    return arr[arrSz - 1];
 }
 
 /**
@@ -164,6 +160,10 @@ const T & Vector<T>::back() const
 template < class T >
 const T & Vector<T>::front() const
 {
+    if(arrSz == 0 ) 
+    {
+        throw std::length_error ("Nao ha elemento no vetor");
+    }
     return arr[0];
 }
 
@@ -175,9 +175,7 @@ const T & Vector<T>::front() const
 template < class T >
 void Vector<T>::assign(const T & x)
 {
-    for(auto i=0; i <= arrSz; i++) {
+    for(auto i=0; i < arrSz; i++) {
         arr[i] = x;
     }
 }
-
-#endif
