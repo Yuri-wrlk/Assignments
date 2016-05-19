@@ -1,3 +1,14 @@
+/*!
+ *	@file Forward_list.hpp
+ *
+ *  Arquivo que contém as implementações dos métodos da classe Forward_list
+ */
+
+/*!
+ *	@brief Construtor da classe.
+ *
+ *	Construtor básico que inicializa as várias e a lista vazia
+ */
 template <class T>
 Forward_list<T>::Forward_list() : 
         m_size (0),
@@ -5,20 +16,84 @@ Forward_list<T>::Forward_list() :
         m_tail (nullptr)
 { /* Empty */ }
 
+/*!
+ *	@brief Construtor cópia
+ *  @param lista Uma lista do mesmo tipo passada por referência
+ *
+ *	Nesse construtor é criada uma duplicata da lista que foi recebida como parâmetro
+ */
+template <class T>
+Forward_list<T>::Forward_list(const Forward_list<T> &lista)
+{
+    if(lista.size() != 0)
+    {
+        Node * tocopy = lista.m_head; 
+        Node * newNode;
+        
+        // Teste de erro para ver se é possível alocar o novo objeto
+        try {
+            newNode = new Node;
+        }
+        catch(const std::bad_alloc & e) {
+            throw std::overflow_error ( "Erro durante alocação na memoria do novo valor da lista.\n");
+        }
+    
+        newNode->data = tocopy->data; 
+        newNode->next = nullptr;
+        tocopy = tocopy->next;
+    
+        while(tocopy != nullptr){
+        
+            try {
+                newNode->next = new Node;
+            }
+            catch(const std::bad_alloc & e) {
+                throw std::overflow_error ( "Erro durante alocação na memoria do novo valor da lista.\n");
+            }
+            newNode = newNode->next;
+            
+            newNode->data = tocopy->data;
+            newNode->next = nullptr;
+            
+            tocopy = tocopy->next;
+        }                   
+    }
+    
+    //Os valores da lista a ser copiada são atribuidos à nova lista
+    m_size = lista.size(); 
+    m_head = lista.m_head;
+    m_tail = lista.m_tail;
+        
+}
+
+/*!
+ *	@brief Destrutor
+ *
+ *	Convoca a função clear, eliminando todos os elementos da lista
+ */
 template <class T>
 Forward_list<T>::~Forward_list() 
 {
     clear();
 }
 
+/*!
+ *	@brief Sobrecarga do operador =
+ *  @param lista Uma lista do mesmo tipo passada por referência
+ *
+ *	Tem comportamento análogo ao construtor cópia, fazendo a cópia profunda no
+ *  primeiro argumento da lista passada no segundo argumento
+ *  @return A lista já copiada
+ */
 template <class T>
-Forward_list<T>::Forward_list(const Forward_list<T> &lista)
-{
+Forward_list<T> & Forward_list<T>::operator= ( const Forward_list<T> & lista){ 
     clear();
     if(lista.size() != 0)
     {
-        Node * tocopy = lista.m_head; // aqui esta dando erro //precisamos do metdodo que pega o m_head // sim, deixa comigo ai ô returnM_head()
+        Node * tocopy = lista.m_head; 
         Node * newNode;
+        
+        // Teste de erro para ver se é possível alocar o novo objeto
         try {
             newNode = new Node;
         }
@@ -28,8 +103,6 @@ Forward_list<T>::Forward_list(const Forward_list<T> &lista)
     
         newNode->data = tocopy->data; 
         newNode->next = nullptr;
-        m_head = newNode;
-        m_tail = newNode;
         tocopy = tocopy->next;
     
         while(tocopy != nullptr){
@@ -45,69 +118,42 @@ Forward_list<T>::Forward_list(const Forward_list<T> &lista)
             newNode->data = tocopy->data;
             newNode->next = nullptr;
             
-            m_tail = newNode;
             tocopy = tocopy->next;
         }                   
     }
+    
+    //Os valores da lista a ser copiada são atribuidos à nova lista
     m_size = lista.size(); 
-}
-
-template <class T>
-Forward_list<T>::Forward_list(Forward_list<T> && ) 
-{
-    
-}
-
-template <class T>
-Forward_list<T> & Forward_list<T>::operator= ( const Forward_list<T> & lista){ // copia profunda
-    clear();
-    if(lista.size() != 0)
-    {
-        Node * tocopy = lista.m_head;
-        Node * newNode;
-        try {
-            newNode = new Node;
-        }
-        catch(const std::bad_alloc & e) {
-            throw std::overflow_error ( "Erro durante alocação na memoria do novo valor da lista.\n");
-        }
-    
-        newNode->data = tocopy->data; 
-        newNode->next = nullptr;
-        m_head = newNode;
-        m_tail = newNode;
-        tocopy = tocopy->next;
-    
-        while(tocopy != nullptr){
-        
-            try {
-                newNode->next = new Node;
-            }
-            catch(const std::bad_alloc & e) {
-                throw std::overflow_error ( "Erro durante alocação na memoria do novo valor da lista.\n");
-            }
-            newNode = newNode->next;
-            
-            newNode->data = tocopy->data;
-            newNode->next = nullptr;
-            
-            m_tail = newNode;
-            tocopy = tocopy->next;
-        }                   
-    }
-    m_size = lista.size();
+    m_head = lista.m_head;
+    m_tail = lista.m_tail;
     return *this;
 }
 
+/*!
+ *	@brief Sobrecarga do operador = para recebimento de ponteiros
+ *  @param lista Um ponteiro para uma lista
+ *
+ *  Realiza uma cópia rasa da lista passada por ponteiro
+ */
 template <class T>
 Forward_list<T> & Forward_list<T>::operator= ( Forward_list<T> && lista)
 {
     clear();
-    Node* work =  lista;
+    Node* work = lista.m_head;
+    while(work != nullptr)
+    {
+        this->pushBack(work->data);
+        work = work->next;
+    }
     m_head = lista.front();
     m_tail = lista.back();
 }
-        
+
+/*!
+ *	@brief Retorna o tamanho da lista
+ *
+ *  @return Um inteiro longo longo e sem sinal dizendo a quantidade de elementos
+ */
 template <class T>
 size_type Forward_list<T>::size() const {
 
@@ -115,7 +161,13 @@ size_type Forward_list<T>::size() const {
 }
 
 
-
+/*!
+ *	@brief Deleta todos os elementos da lista
+ *
+ *  Percorre todos os elementos da lista chamando a função delete para eles
+ *  no final zera o tamanho total da lista assim como reseta os ponteiros de
+ *  início e fim
+ */
 template <class T>
 void Forward_list<T>::clear(){
     if(m_head != nullptr){
@@ -131,11 +183,24 @@ void Forward_list<T>::clear(){
     }
 }
 
+/*!
+ *	@brief Consulta se a lista está vazia
+ *
+ *	Retorna true se o ponteiro de inicio aponta para nada, falso caso contrário
+ */
 template <class T>
 bool Forward_list<T>::empty() {
     return (m_head == nullptr);
 }
 
+/*!
+ *	@brief Insere um elemento ao final da lista
+ *  @param x Um objeto a ser inserido na lista
+ *
+ *	Primeiramente testa se é possível alocar um novo objeto, se sim, o novo objeto
+ *  é inserido na posição após o ponteiro de fim. Os ponteiros de inicio e fim são
+ *  então atualizados de acordo.
+ */
 template <class T>
 void Forward_list<T>::push_back( const T & x ){
     Node* newNode;
@@ -162,7 +227,13 @@ void Forward_list<T>::push_back( const T & x ){
     m_size++;
 }
 
-
+/*!
+ *	@brief Remove o node no final da lista
+ *
+ *	Primeiramente testa se há algum elemento na lista, se sim, a lista é percorrida
+ *  até o ultimo elemento, que é removido. Então, os ponteiros de inicio e fim são
+ *  atualizados de acordo
+ */
 template <class T>
 void Forward_list<T>::pop_back() {
     if(empty() ) {
@@ -188,6 +259,11 @@ void Forward_list<T>::pop_back() {
     m_size--;
 }
 
+/*!
+ *	@brief Retorna o valor do último node
+ *
+ *	@return Objeto de dados contido node ultimo no da lista
+ */
 template <class T>
 const T & Forward_list<T>::back() const {
     if(m_head == nullptr) {
@@ -196,6 +272,11 @@ const T & Forward_list<T>::back() const {
     return m_tail->data;
 }
 
+/*!
+ *	@brief Retorna o valor do primeiro node
+ *
+ *	@return Objeto de dados contido no primeiro node da lista
+ */
 template <class T>
 const T & Forward_list<T>::front() const {
     if(m_head == nullptr) {
@@ -204,6 +285,11 @@ const T & Forward_list<T>::front() const {
     return m_head->data;
 }
 
+
+/*!
+ *	@brief Substitui os valores da lista
+ *  @param x Valor que substituirá cada elemento da lista
+ */
 template <class T>
 void Forward_list<T>::assign(const T & x){
     Node * work = m_head;
@@ -213,6 +299,14 @@ void Forward_list<T>::assign(const T & x){
     }
 }
 
+/*!
+ *	@brief Insere um elemento no inicio da lista
+ *  @param x Um objeto a ser inserido na lista
+ *
+ *	Primeiramente testa se é possível alocar um novo objeto, se sim, o novo objeto
+ *  é inserido na posição anterior o ponteiro de inicio. Os ponteiros de inicio e fim são
+ *  então atualizados de acordo.
+ */
 template <class T>
 void Forward_list<T>::push_front( const T & x ) {
     Node* newNode = nullptr;
@@ -232,6 +326,14 @@ void Forward_list<T>::push_front( const T & x ) {
         m_tail = m_head;
 }
 
+
+/*!
+ *	@brief Remove o node no inicio da lista
+ *
+ *	Primeiramente testa se ha algum elemento na lista, se sim, o elemento apontado
+ *  pelo ponteiro de inicio e deletado. Entao, os ponteiros de inicio e fim sao
+ *  atualizados de acordo
+ */
 template <class T>
 void Forward_list<T>::pop_front() {
     if(empty() ) {
@@ -246,6 +348,9 @@ void Forward_list<T>::pop_front() {
         m_tail = nullptr;
 }
 
+/*!
+ *	@brief Imprime a lista na tela
+ */
 template <class T>
 void Forward_list<T>::print() {
     int i = 0;
@@ -261,296 +366,4 @@ void Forward_list<T>::print() {
     }
     std::cout << "]\n";
 }
-/*
-template <class T>
-typename Forward_list<T>::Iterator insert_after( Forward_list<T>::Const_Iterator itr , const T & x )
-{
-    Node* work = itr.const_it_ptr;
-    while(work != nullptr)
-    {
-        work->data = x;
-        work = work->next;
-    }
-}
 
-template <class T>
-typename Forward_list<T>::Iterator insert_after( Const_Iterator pos , std::initializer_list<T> ilist )
-{
-    
-}
-*/
-//OBS: o tipo SNPtr aqui se chama NPtr
-//OBS2: o _pAIL aqui se chama head que é o ponteiro para o inicio da lista
-// sim mas é bom olhar caso a caso para não gerar algum problema
-// blz
-
-// void print()
-// {
-//     int i = 0;
-//     NPtr work = m_head;
-//     if(empty() ) {
-//       std::cerr << ">>> Lista vazia.\n"; // erro de lista vazia
-//     }
-//     std::cout << "[ ";
-//     while(work != nullptr) {
-//       std::cout << work->data << " ";
-//       i++;
-//       work = work->next;
-//     }
-//     std::cout << "]\n";
-// }
-
-//! Length of the list.
-/*! Calculates and return the length of the list. Length is zero, if list is empty.
- *  @param _pAIL Pointer to the head of the list. It NULL, list is empty.
- *  @return The length.
- */
- 
-// int length()
-// {
-//   return nodesNumber+1;
-// }
-
-
-// bool empty()
-// {
-//   if(m_head == nullptr && m_size == 0) {
-//     return true;
-//   }
-//   return false;
-// }
-
-
-// void clear()
-// {
-//   if(m_head == nullptr) {
-//     std::cout << ">>> Esta fila já está vazia.\n";
-//   }
-//   Node* work = m_head;
-//   while(m_head != nullptr) {
-//     work = work->mpNext;
-//     delete m_head;
-//     m_head = work;
-//   }
-//   m_head = nullptr;
-//}
-
-
-// bool front(int & _retrievedVal)
-// {
-//     if(m_head == nullptr) {
-//       _retrievedVal = m_head->miData;
-//       return false;
-//     }
-//     return true;
-// }
-
-
-// bool back(int & _retrievedVal)
-// {
-//     if(m_head == nullptr) {
-//       return false;
-//     }
-//     Node* work = _pAIL;
-//     while(work->next == nullptr) {
-//       work = work->next;
-//     }
-//     _retrievedVal = work->data;
-//     return true;
-// }
-
-
-// bool pushFront(int _newVal )
-// {
-//   Node* newNode = nullptr;
-
-//   try {
-//     newNode = new Node;
-//   }
-//   catch(const std::bad_alloc & e) {
-//     return false;
-//   }
-
-//   newNode->data = _newVal;
-//   newNode->next = m_head;
-//   m_head = newNode;
-
-//   return true;
-// }
-
-
-// bool pushBack(int _newVal)
-// {
-//   Node* work = _pAIL;
-//   Node* newNode;
-//   try {
-//     newNode = new Node;
-//   }
-//   catch(const std::bad_alloc & e) {
-//     std::cout << ">>> Erro durante alocação na memoria do novo valor da lista.\n";
-//     return false;
-//   }
-//   if(work == nullptr) {
-//     newNode->data = _newVal;
-//     newNode->next = nullptr;
-//     m_head = newNode;
-//     return true;
-//   }
-//   while(work != nullptr) {
-//     if(work->next == nullptr) {
-//       break;
-//     }
-//     work = work->next;
-//   }
-//   newNode->data = _newVal;
-//   newNode->next = nullptr;
-//   work->next = newNode;
-//   return true;
-// }
-
-
-// bool popFront(int & _retrievedVal)
-// {
-//   if(empty() ) {
-//     std::cout << ">>> A lista está vazia.\n";
-//     return false;
-//   }
-//   Node* work = m_head;
-//   _retrievedVal = work->data;
-//   work = work->next;
-//   delete m_head;
-//   m_head = work;
-//     return true;
-// }
-
-
-// bool popBack(int& _retrievedVal)
-// {
-//   if(empty() ) {
-//     std::cout << ">>> A lista está vazia.\n";
-//     return false;
-//   }
-//   Node* work = m_head;
-//   Node* work2 = m_head;
-//   while(work->next != nullptr) {
-//     work2 = work;
-//     work = work->next;
-//   }
-//   delete work;
-//   work2->next = nullptr;
-//     return true;
-// }
-
-
-
-
-
-/**
-*   Retorna o node anterior ao do node procurado.
-*/
-// template <class T>
-// Node* Forward_list<T>::find(int _targetVal)
-// {
-//     Node* work = m_head;
-//     if(work == nullptr) {
-//       std::cout << ">>> A lista esta vazia.\n";
-//       return nullptr;
-//     }
-//     if(work->data == _targetVal) {
-//       return nullptr;
-//     }
-//     if(tail->dataa == _targetVal) {
-//         return tail;
-//     }
-//     while(work->next != nullptr) {
-//       if( (work->next->data) == _targetVal){
-//         return work;
-//       }
-//       work = work->next;
-//     }
-//     std::cout << ">>> O elemento não foi encontrado.\n";
-//     return nullptr;
-// }
-
-// template <class T>
-// bool Forward_list<T>::insert(Node* _pAnte, int _newVal ) //antes tinha 3 entradas            bool insert( SNPtr & _pAIL, SNPtr _pAnte, int _newVal )
-// {
-//     Node* work = m_head;
-//     Node* newNode;
-//     if(_pAnte == nullptr) { // o novo Node deve ser 
-//       Node* work = m_head;
-//       m_head = new Node;
-//       m_head->data = _newVal;
-//       m_head->next = work;
-//       return true;
-//     }
-//     else if(m_head == nullptr) { // a lista é vazia, um node é craiado
-//       try {
-//         newNode = new Node;
-//       }
-//       catch(const std::bad_alloc & e) {
-//         std::cout << ">>> Erro durante alocação na memoria do novo valor da lista.\n";
-//         return false;
-//       }
-//       newNode->data = _newVal;
-//       newNode->next = nullptr;
-//       m_head = newNode;
-//     }
-//     else if(m_head == _pAnte) {  
-
-//       try {
-//         SNPtr newNode = new Node;
-//       }
-//       catch(const std::bad_alloc & e) {
-//         std::cout << ">>> Erro durante alocação na memoria do novo valor da lista.\n";
-//         return false;
-//       }
-
-//       newNode->data = _newVal;
-//       newNode->next = work;
-//       m_head = newNode;
-//     }
-//     while(work->next != _pAnte) {
-//       if(work->next == nullptr) {
-//         std::cout << ">>> A posição que deve ser colocado o volor " << _newVal << " não foi encontrado.\n";
-//         return false;
-//       }
-//       work = work->next;
-//     }
-
-//     try {
-//       SNPtr newNode = new Node;
-//     }
-//     catch(std::bad_alloc & e) {
-//       std::cout << ">>> Erro durante alocação na memoria do novo valor da lista.\n";
-//       return false;
-//     }
-
-//     newNode->data = _newVal;
-//     newNode->next = _pAnte;
-//     work->next = newNode;
-//     m_size += 1;
-//     return true;
-// }
-
-// template <class T>
-// bool Forward_list<T>::remove(Node* _pAnte, int & _retrievedVal ) // antes tinha 3 entradas     bool remove( SNPtr & _pAIL, SNPtr _pAnte, int & _retrievedVal )
-// {
-//     int x;
-//     Node* work = m_head;
-//     if(work == nullptr) {
-//       std::cout << ">>> A lista esta vazia. Não existe oque remover.\n";
-//       return false;
-//     }
-//     if(_pAnte == nullptr) {
-//       work = work->next;
-//       _retrievedVal = work->data;
-//       delete work;
-//       return true;
-//     }
-//     work = _pAnte->next;
-//     _pAnte->next = work->next;
-//     _retrievedVal = work->data;
-//     delete work;
-//     return true;
-// }
